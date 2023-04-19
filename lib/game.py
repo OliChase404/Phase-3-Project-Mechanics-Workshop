@@ -18,9 +18,10 @@ from mechanics import Mechanic
 workshop_funds = 10000
 fund_ticker = f'|-->Current funds: ${workshop_funds}<--|'
 
+terminal_width = os.get_terminal_size().columns
+clear = lambda : os.system('tput reset')
 
 def main_menu():
-    terminal_width = os.get_terminal_size().columns
     print('🔧' * int(terminal_width / 2))
     print("""
             ___           ___                       ___           ___           ___           ___           ___   
@@ -49,7 +50,7 @@ def main_menu():
       """)
     print('🔧' * int(terminal_width / 2))
     print(f'\n{" " * int((terminal_width / 2) - (len(fund_ticker) / 2))}{fund_ticker}\n')
-
+    
     print("""
           Choose an option:
             1. Hire a mechanic
