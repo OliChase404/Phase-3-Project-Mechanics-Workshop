@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 from ipdb import set_trace
 
 engine = create_engine("sqlite:///workshop.db")
@@ -14,4 +14,5 @@ class Job(Base):
     id = Column(Integer, primary_key=True)
     description = Column(String)
     difficulty = Column(Integer)
+    reward = Column(Integer)
     assigned_to = Column(Integer, nullable=True)
