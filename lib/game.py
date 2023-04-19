@@ -42,7 +42,7 @@ def main_menu():
             /  /:/       |  |:|    /  /:/  ___   /  /:/  \:\   /  /:/  \:\   _____\__\:\                    
            /  /::\     __|__|:|   /__/:/  /  /\ /__/:/ \__\:\ /__/:/ \__\:\ /__/::::::::\                   
           /__/:/\:\   /__/::::\   \  \:\ /  /:/ \  \:\ /  /:/ \  \:\ /  /:/ \  \:\~~\~~\/                   
-          \__\/  \:\      \~~\:\   \  \:\  /:/   \  \:\  /:/   \  \:\  /:/   \  \:\  ~~~                    
+          \__\/  \:\      \~~\:\   \  \:\  /:/   \  \:\  /:/   \  \:\  /:/   \  \:\                      
                \  \:\      \  \:\   \  \:\/:/     \  \:\/:/     \  \:\/:/     \  \:\                        
                 \__\/       \__\/    \  \::/       \  \::/       \  \::/       \  \:\                       
                                       \__\/         \__\/         \__\/         \__\/  
@@ -52,13 +52,30 @@ def main_menu():
     print(f'\n{" " * int((terminal_width / 2) - (len(fund_ticker) / 2))}{fund_ticker}\n')
     
     print("""
-          Choose an option:
-            1. Hire a mechanic
-            
+Commands:
+  1 = View Inbox
+  2 = View Workshop
+  3 = View Employees
+  4 = View Finances
           """)
     
+    choice = input('>>> ')  
+    if  choice == '1':
+        # hire_mechanic()
+        print('Hire mechanic')
+    
 
+def view_inbox():
+  pass
 
+def view_workshop():
+  pass
+
+def view_employees():
+  pass
+
+def view_finances():
+  pass
 
 
 
