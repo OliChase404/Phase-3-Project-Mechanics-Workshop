@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float
-from sqlalchemy.orm import sessionmaker
-# from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
+from rich.console import Console
+from functions import random_job
 from ipdb import set_trace
 from faker import Faker
-from rich.console import Console
 from rich import print
 import random
 import time
@@ -29,7 +29,7 @@ def clock(hours):
     global game_days
     game_hours += hours
     game_days = int(game_hours / 8)
-    new_mech_dice_roll()
+    # new_mech_dice_roll()
 # ------------------------------
 
 
@@ -41,7 +41,7 @@ def main_menu():
   current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
   stats_ticker = f'|--> Day: {game_days} Current funds: ${current_funds} <--|'
   print('🔧' * int(terminal_width / 2))
-  console.print("""[bright_red]
+  console.print("""[bright_cyan]
       ___           ___                       ___           ___           ___           ___           ___   
      /  /\         /__/\          ___        /  /\         /  /\         /__/\         /  /\         /  /\  
     /  /::\        \  \:\        /  /\      /  /::\       /  /:/_        \  \:\       /  /::\       /  /::\ 
@@ -53,7 +53,7 @@ def main_menu():
    \  \:\        \  \:\/:/        \  \:\   \  \:\/:/     \__\/ /:/     \  \:\        \  \:\/:/     \  \:\   
     \  \:\        \  \::/          \__\/    \  \::/        /__/:/       \  \:\        \  \::/       \  \:\  
      \__\/         \__\/                     \__\/         \__\/         \__\/         \__\/         \__\/  
-   [/][bright_yellow]  
+   [/][bright_red]  
                                        ___           ___           ___           ___                        
                ___         ___        /  /\         /  /\         /  /\         /__/\                       
               /  /\       /__/|      /  /:/        /  /::\       /  /::\        \  \:\                      
@@ -73,23 +73,19 @@ def main_menu():
 
   print("""
 Commands:
-1 = View Inbox
-2 = View Workshop
-3 = View Employees
-4 = View Finances
+1 = View Computer
+2 = Visit Workshop
+3 = Visit Bank
         """)
 
   choice = input('>>> ')
   if choice == '1':
-      view_inbox()
+      clear()
+      view_computer()
   elif choice == '2':
         clear()
         view_workshop()
   elif choice == '3':
-      clock(1)
-      clear()
-      view_employees()
-  elif choice == '4':
       clear()
       view_finances()
   else:
@@ -98,8 +94,131 @@ Commands:
       main_menu()
 
 
-def view_inbox():
-    pass
+def view_computer():
+    print('=' * int(terminal_width))
+    console.print('''[bright_green]
+                                 .,,uod8B8bou,,.
+                        ..,uod8BBBBBBBBBBBBBBBBRPFT?l!i:.
+                   ,=m8BBBBBBBBBBBBBBBRPFT?!||||||||||||||
+                   !...:!TVBBBRPFT||||||||||!!^^""'   ||||
+                   !.......:!?|||||!!^^""'            ||||
+                   !.........||||                     ||||
+                   !.........||||                     ||||
+                   !.........||||                     ||||
+                   !.........||||                     ||||
+                   !.........||||                     ||||
+                   !.........||||                     ||||
+                   `.........||||                    ,||||
+                    .;.......||||               _.-!!|||||
+             .,uodWBBBBb.....||||       _.-!!|||||||||!:'
+          !YBBBBBBBBBBBBBBb..!|||:..-!!|||||||!iof68BBBBBb....
+          !..YBBBBBBBBBBBBBBb!!||||||||!iof68BBBBBBRPFT?!::   `.
+          !....YBBBBBBBBBBBBBBbaaitf68BBBBBBRPFT?!:::::::::     `.
+          !......YBBBBBBBBBBBBBBBBBBBRPFT?!::::::;:!^"`;:::       `.
+          !........YBBBBBBBBBBRPFT?!::::::::::^''...::::::;         iBBbo.
+          `..........YBRPFT?!::::::::::::::::::::::::;iof68bo.      WBBBBbo.
+            `..........:::::::::::::::::::::::;iof688888888888b.     `YBBBP^'
+              `........::::::::::::::::;iof688888888888888888888b.     `
+                `......:::::::::;iof688888888888888888888888888888b.
+                  `....:::;iof688888888888888888888888888888888899fT!
+                    `..::!8888888888888888888888888888888899fT|!^"'
+                      `' !!988888888888888888888888899fT|!^"'
+                          `!!8888888888888888899fT|!^"'
+                            `!988888888899fT|!^"'
+                              `!9899fT|!^"'
+                                `!^"'
+                  [/]''')
+    print('=' * int(terminal_width))
+    print("""
+Commands:
+1 = View Available Jobs
+2 = View Mechanic Resumes
+3 = Review Employees
+4 = Return to Main Menu
+        """)
+    choice = input('>>> ')
+    if choice == '1':
+        view_available_jobs()
+    elif choice == '2':
+        view_resumes()
+    elif choice == '3':
+        clear()
+        view_employees()
+    elif choice == '4':
+        clear()
+        main_menu()
+    else:
+        clear()
+        view_computer()
+        
+def view_available_jobs():
+    rj = random_job()
+    # print(rj)
+    j1 = Job(description=rj['description'], difficulty=rj['difficulty'], reward=rj['reward'], assigned_to=None)
+    print(f''' 
+        Available Jobs:
+            
+           | Customer: {fake.name()} 
+           | Job Description: {j1.description} 
+           | Difficulty: {j1.difficulty} 
+           | Reward: {j1.reward}
+          ''')
+    accept = input('        Accept This Job? (y/n)\n--> ')
+    if accept == 'y':
+        print('Job Accepted')
+        session.add(j1)
+        session.commit()
+        time.sleep(1)
+        clear()
+        view_computer()
+        view_available_jobs()
+    else:
+        clear()
+        view_computer()
+        
+def view_resumes():
+    new_mech_level = random.randint(1, 10)
+    new_mech_salary = new_mech_level * 150 + 500
+    M1 = Mechanic(name=fake.name(), level=new_mech_level, salary=new_mech_salary)
+    query = input(f"""
+        A Mechanic Wants to Join Your Team!\n
+            | Name: {M1.name}
+            | Level: {M1.level}
+            | Desired salary: {M1.salary}\n
+        Hire Mechanic? (y/n) """)
+    if query == "y":
+        session.add(M1)
+        session.commit()
+        print(f"{M1.name} has been hired!")
+        time.sleep(1)
+        clear()
+        view_computer()
+    else:
+        print(f"{M1.name} has been rejected.")
+        time.sleep(1)
+        clear()
+        view_computer()
+    
+def view_employees():
+    employees = session.query(Mechanic).all()
+    print('\nCurrent Employees:\n')
+    print(employees)
+    fire = input('Would you like to fire an employee? (y/n)\n--> ')
+    if fire == 'y':
+        selcted_employee = input('Enter the ID of the employee to fire --> ')
+        if selcted_employee in [str(employee.id) for employee in employees]:
+            session.query(Mechanic).filter(
+                Mechanic.id == selcted_employee).delete()
+            print(f'\n<---Employee Fired--->\n')
+            time.sleep(1)
+            clear()
+            view_employees()
+        else:
+            clear()
+            view_employees()
+    else:
+        clear()
+        view_computer()
 
 
 def view_workshop():
@@ -141,8 +260,6 @@ Commands:
 1 = Attempt Repairs
 2 = Return to Main Menu
         """)
-    # time.sleep(3)
-
     choice = input('>>> ')
     if choice == '1':
         attempt_repairs()
@@ -161,8 +278,8 @@ def attempt_repairs():
     print(f"Job {selected_job.id} has been selected.\n")
     
     if selected_mechanic.level >= selected_job.difficulty:
-        chance_of_success = 90
-    else: chance_of_success = selected_mechanic.level / selected_job.difficulty * 100
+        chance_of_success = 85
+    else: chance_of_success = (selected_mechanic.level / selected_job.difficulty * 100) -5
     
     if chance_of_success  > 80:
         print('Chance of success is high')
@@ -203,25 +320,6 @@ def attempt_repairs():
         
 
 
-def view_employees():
-    employees = session.query(Mechanic).all()
-    print('\nCurrent Employees:\n')
-    print(employees)
-    fire = input('Would you like to fire an employee? (y/n)\n--> ')
-    if fire == 'y':
-        selcted_employee = input('Enter the ID of the employee to fire --> ')
-        if selcted_employee in [str(employee.id) for employee in employees]:
-            session.query(Mechanic).filter(
-                Mechanic.id == selcted_employee).delete()
-            print(f'\n<---Employee Fired--->\n')
-            view_employees()
-        else:
-            clear()
-            print(f'\n---Employee {selcted_employee} not found---\n')
-            view_employees()
-    else:
-        clear()
-        main_menu()
 
 
 def view_finances():
@@ -280,25 +378,25 @@ class Mechanic(Base):
     def __repr__(self):
         return f"'\n'Employee ID: {self.id}'\n' Name: {self.name}'\n' Level: {self.level}'\n' Salary: ${self.salary} '\n'"
 
-def new_mech_dice_roll():
-    new_mech_level = random.randint(1, 10)
-    new_mech_salary = new_mech_level * 150 + 500
-    M1 = Mechanic(name=fake.name(), level=new_mech_level,
-                  salary=new_mech_salary)
-    dice = random.randint(1, 10)
-    if dice > 6:
-        query = input(f"""
-A new mechanic wants to join your team.
-Name: {M1.name}
-Level: {M1.level}
-Desired salary: {M1.salary}
-Do you want to hire him? (y/n) """)
-        if query == "y":
-            session.add(M1)
-            session.commit()
-            print(f"{M1.name} has been hired!")
-        else:
-            print(f"{M1.name} has been rejected.")
+# def new_mech_dice_roll():
+#     new_mech_level = random.randint(1, 10)
+#     new_mech_salary = new_mech_level * 150 + 500
+#     M1 = Mechanic(name=fake.name(), level=new_mech_level,
+#                   salary=new_mech_salary)
+#     dice = random.randint(1, 10)
+#     if dice > 6:
+#         query = input(f"""
+# A new mechanic wants to join your team.
+# Name: {M1.name}
+# Level: {M1.level}
+# Desired salary: {M1.salary}
+# Do you want to hire him? (y/n) """)
+#         if query == "y":
+#             session.add(M1)
+#             session.commit()
+#             print(f"{M1.name} has been hired!")
+#         else:
+#             print(f"{M1.name} has been rejected.")
 
 
 class Job(Base):
@@ -332,7 +430,6 @@ def update_finances():
 Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 # --------------------------------------------------------------------------------------
-
 
 
 
