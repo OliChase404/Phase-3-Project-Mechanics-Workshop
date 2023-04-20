@@ -5,8 +5,9 @@ from sqlalchemy.orm import declarative_base
 from ipdb import set_trace
 from faker import Faker
 from rich.console import Console
-# from rich import print
+from rich import print
 import random
+import time
 import os
 
 engine = create_engine("sqlite:///workshop.db")
@@ -20,8 +21,9 @@ terminal_width = os.get_terminal_size().columns
 def clear(): return os.system('tput reset')
 
 # Game clock ------------------------------
-game_hours = 0
+game_hours = 8
 game_days = 1
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 def clock(hours):
     global game_hours
     global game_days
@@ -35,10 +37,11 @@ def clock(hours):
 
 
 def main_menu():
+  day_of_the_week = days[(game_days % 7) - 1]
   current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
   stats_ticker = f'|--> Day: {game_days} Current funds: ${current_funds} <--|'
   print('🔧' * int(terminal_width / 2))
-  console.print("""[red]
+  console.print("""[bright_red]
       ___           ___                       ___           ___           ___           ___           ___   
      /  /\         /__/\          ___        /  /\         /  /\         /__/\         /  /\         /  /\  
     /  /::\        \  \:\        /  /\      /  /::\       /  /:/_        \  \:\       /  /::\       /  /::\ 
@@ -50,6 +53,7 @@ def main_menu():
    \  \:\        \  \:\/:/        \  \:\   \  \:\/:/     \__\/ /:/     \  \:\        \  \:\/:/     \  \:\   
     \  \:\        \  \::/          \__\/    \  \::/        /__/:/       \  \:\        \  \::/       \  \:\  
      \__\/         \__\/                     \__\/         \__\/         \__\/         \__\/         \__\/  
+   [/][bright_yellow]  
                                        ___           ___           ___           ___                        
                ___         ___        /  /\         /  /\         /  /\         /__/\                       
               /  /\       /__/|      /  /:/        /  /::\       /  /::\        \  \:\                      
@@ -64,6 +68,7 @@ def main_menu():
 
       [/]""")
   print('🔧' * int(terminal_width / 2))
+  print(f'\n{" " * int((terminal_width / 2) - (len(day_of_the_week) / 2))}{day_of_the_week}')
   print(f'\n{" " * int((terminal_width / 2) - (len(stats_ticker) / 2))}{stats_ticker}\n')
 
   print("""
@@ -78,9 +83,8 @@ Commands:
   if choice == '1':
       view_inbox()
   elif choice == '2':
-      clear()
-      clock(10)
-      main_menu()
+        clear()
+        view_workshop()
   elif choice == '3':
       clock(1)
       clear()
@@ -99,8 +103,104 @@ def view_inbox():
 
 
 def view_workshop():
-    clock(10)
-    main_menu()
+    console.print('''[bright_cyan]
+          ||,             |..|: (:)          []     (:)         "   
+|||             |..|:   ()                 (:)   xxxxX|
+\|''         o  |..|:   (:)        []        ()_   xxX|
+ cc88b       Cb |..|:  __||___________________||_   xx|            "
+68%8QU89  " d8Ub|..|:_//=========================\  _x| "  cce*88oo       "   "
+O0896%68Oo   ||  \.l/=/===========================\|#||  C8O8*8Q8P*Ob o8oo
+a%0C88i%8B,,    " /==/=============================\#|/dOB*9*OLS*UOpugO9*D
+PQ%OO8OO' |||, "  |..|     __               __ -=  |-' CO*9O0*89PBCOPL*SOBB*
+8OUC%CBO%b`|||,,,,|..| O   /\    -=-        /\   O |  " Cgg*bU8*UO*OOd*UOdcb
+89Y|//OOP `||||||||..||/| /__\ ___________ /__\ |/||,,,,,,6O*U  /p  gc*U*dpP
+  \||       \||||||:.||/|      |##X##X##||      |/||||||||, \\\//  /d*uUP* ,||||||||||||||||||||||||||||||||||||
+  |||        `|||||::||/| =-   |XX:XX:XX||      |/||||||||||, \\\////_\ ,,||||||||||||||||||||||||||||||||||||||
+:        "         \:||/|      |.::..::.|| =    |/|||||||||||| |||// ,,,||||||||||||||||||||||||||||||||||||||||
+::   "     "        \||_|______|........\|______|_||           |||||
+:::.      "       "                :  :                "     .//||||\   "           "       "       "       "   
+::::::.       "            "     , .           "                     "              "        "  
+::%::::::.  "       "    .           :   `              "        "        "       "        "    "
+::::::%:::::....              ,   :  . : ` .     "          "
+:%:::::::::%::::::::.........:...:.:...:..:...........................::::::::::::::::::::::::::::::::::::::::::
+::::::%::::::::::%:::::::::::%:::::::::::::::%:::::::::::::::%::::%::::%::::::::::::::::::::::::::::::::::::::::
+`::::::::::%::::::::::::%::::::::::::::%::::::::::::%:::::%::::::::::::::%::::::::::::::::::::::::::::::::::::::
+
+          [/]''')
+    print('=' * int(terminal_width))
+    all_mechanics = session.query(Mechanic).all()
+    all_jobs = session.query(Job).all()
+    print('\nCurrent Mechanics:\n')
+    for mechanic in all_mechanics:
+        print(f'ID: {mechanic.id} - {mechanic.name} - Level: {mechanic.level}')
+    print('\nCurrent Jobs:\n')
+    for job in all_jobs:
+        print(f'Job ID: {job.id} Description: {job.description} - Difficulty: {job.difficulty} Reward: {job.reward}')
+    print("""
+Commands:
+1 = Attempt Repairs
+2 = Return to Main Menu
+        """)
+    # time.sleep(3)
+
+    choice = input('>>> ')
+    if choice == '1':
+        attempt_repairs()
+    elif choice == '2':
+        clear()
+        main_menu()
+    else:
+        clear()
+        view_workshop()
+def attempt_repairs():
+    m_id = input('Select a Mechanic to Assign. \nEnter Mechanic ID --> ')
+    selected_mechanic = session.query(Mechanic).filter(Mechanic.id == m_id).first()
+    print(f"{selected_mechanic.name} has been selected.")
+    j_id = input('Select a Job to Assign. \nEnter Job ID --> ')
+    selected_job = session.query(Job).filter(Job.id == j_id).first()
+    print(f"Job {selected_job.id} has been selected.\n")
+    
+    if selected_mechanic.level >= selected_job.difficulty:
+        chance_of_success = 90
+    else: chance_of_success = selected_mechanic.level / selected_job.difficulty * 100
+    
+    if chance_of_success  > 80:
+        print('Chance of success is high')
+    elif chance_of_success > 50 and chance_of_success < 80:
+        print('Chance of success is medium')
+    else: print('Chance of success is low')
+    
+    cont = input('Execute? (y/n) --> ')
+    
+    if cont == 'y':
+        if chance_of_success > random.randint(0,100):
+            console.print('[bright_green]--> Repair Successful!<--[/]')
+            dice = random.randint(1,6)
+            if dice == 6: 
+                console.print(f'[deep_pink1]{selected_mechanic.name} has leveled up![/]')
+                session.query(Mechanic).filter(Mechanic.id == m_id).update({Mechanic.level: Mechanic.level + 1})
+                session.commit()
+            console.print(f'[bright_yellow]${selected_job.reward} Added to Funds![/]')
+            session.query(Finance).update({Finance.current_funds: Finance.current_funds + selected_job.reward})
+            session.query(Finance).update({Finance.income_this_week: Finance.income_this_week + selected_job.reward})
+            session.query(Job).filter(Job.id == j_id).delete()
+            session.commit()
+            time.sleep(3)
+            clear()
+            view_workshop()
+
+        else:
+            console.print('[bright_red]Repair Failed.[/]')
+            owner_compenstation = int(selected_job.reward * random.uniform(0.1, 2))
+            print(f'${owner_compenstation} Compensation Paid to Owner for Damage Caused.')
+            session.query(Finance).update({Finance.current_funds: Finance.current_funds - owner_compenstation})
+            session.query(Job).filter(Job.id == j_id).delete()
+            session.commit()
+            time.sleep(3)
+            clear()
+            view_workshop()
+    
+        
 
 
 def view_employees():
@@ -126,20 +226,20 @@ def view_employees():
 
 def view_finances():
     bank = r'''
-                                        _._._                       _._._
-                                       _|   |_                     _|   |_
-                                       | ... |_._._._._._._._._._._| ... |
-                                       | ||| |  o NATIONAL BANK o  | ||| |
-                                       | """ |  """    """    """  | """ |
-                                  ())  |[-|-]| [-|-]  [-|-]  [-|-] |[-|-]|  ())
-                                 (())) |     |---------------------|     | (()))
-                                (())())| """ |  """    """    """  | """ |(())())
-                                (()))()|[-|-]|  :::   .-"-.   :::  |[-|-]|(()))()
-                                ()))(()|     | |~|~|  |_|_|  |~|~| |     |()))(()
-                                   ||  |_____|_|_|_|__|_|_|__|_|_|_|_____|  ||
-                                ~ ~^^ @@@@@@@@@@@@@@/=======\@@@@@@@@@@@@@@ ^^~ ~
-                                     ^~^~                                ~^~^
-                                         '''
+                                         _._._                       _._._
+                                        _|   |_                     _|   |_
+                                        | ... |_._._._._._._._._._._| ... |
+                                        | ||| |  o NATIONAL BANK o  | ||| |
+                                        | """ |  """    """    """  | """ |
+                                   ())  |[-|-]| [-|-]  [-|-]  [-|-] |[-|-]|  ())
+                                  (())) |     |---------------------|     | (()))
+                                 (())())| """ |  """    """    """  | """ |(())())
+                                 (()))()|[-|-]|  :::   .-"-.   :::  |[-|-]|(()))()
+                                 ()))(()|     | |~|~|  |_|_|  |~|~| |     |()))(()
+                                    ||  |_____|_|_|_|__|_|_|__|_|_|_|_____|  ||
+                                 ~ ~^^ @@@@@@@@@@@@@@/=======\@@@@@@@@@@@@@@ ^^~ ~
+                                      ^~^~                                ~^~^
+                                          '''
     current_funds = session.query(Finance.current_funds).filter_by(id=1).one()[0]
     income_this_week, = session.query(Finance.income_this_week).filter_by(id=1).one()
     shop_upkeep, = session.query(Finance.shop_upkeep).filter_by(id=1).one()
@@ -177,7 +277,6 @@ class Mechanic(Base):
     name = Column(String)
     level = Column(Integer)
     salary = Column(Integer)
-
     def __repr__(self):
         return f"'\n'Employee ID: {self.id}'\n' Name: {self.name}'\n' Level: {self.level}'\n' Salary: ${self.salary} '\n'"
 
@@ -210,6 +309,9 @@ class Job(Base):
     difficulty = Column(Integer)
     reward = Column(Integer)
     assigned_to = Column(Integer, nullable=True)
+    def __repr__(self):
+        return f"'\n'Job ID: {self.id}'\n' Description: {self.description}'\n' Difficulty: {self.difficulty}'\n' Reward: ${self.reward}'\n' Assigned to: {self.assigned_to}'\n'"
+
 
 
 class Finance(Base):
