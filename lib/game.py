@@ -352,5 +352,6 @@ f1 = Finance(current_funds=10000, income_this_week=0, shop_upkeep=5000, total_sa
 
 session.add_all([m1, m2, m3, j1, j2, j3, f1])
 session.commit()
+clear()
 main_menu()
 # ---------------------------------------------------------------
