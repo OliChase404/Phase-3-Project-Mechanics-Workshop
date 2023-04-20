@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
 from ipdb import set_trace
 from faker import Faker
+from rich.console import Console
+# from rich import print
 import random
 import os
 
@@ -12,6 +14,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 Base = declarative_base()
 fake = Faker()
+console = Console()
 
 terminal_width = os.get_terminal_size().columns
 def clear(): return os.system('tput reset')
@@ -35,8 +38,8 @@ def main_menu():
   current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
   stats_ticker = f'|--> Day: {game_days} Current funds: ${current_funds} <--|'
   print('🔧' * int(terminal_width / 2))
-  print("""
-            ___           ___                       ___           ___           ___           ___           ___   
+  console.print("""[red]
+      ___           ___                       ___           ___           ___           ___           ___   
      /  /\         /__/\          ___        /  /\         /  /\         /__/\         /  /\         /  /\  
     /  /::\        \  \:\        /  /\      /  /::\       /  /:/_        \  \:\       /  /::\       /  /::\ 
    /  /:/\:\        \  \:\      /  /:/     /  /:/\:\     /  /:/ /\        \__\:\     /  /:/\:\     /  /:/\:
@@ -59,7 +62,7 @@ def main_menu():
                 \__\/       \__\/    \  \::/       \  \::/       \  \::/       \  \:\                       
                                       \__\/         \__\/         \__\/         \__\/  
 
-      """)
+      [/]""")
   print('🔧' * int(terminal_width / 2))
   print(f'\n{" " * int((terminal_width / 2) - (len(stats_ticker) / 2))}{stats_ticker}\n')
 
@@ -123,21 +126,21 @@ def view_employees():
 
 def view_finances():
     bank = r'''
-                                       _._._                       _._._
-                                      _|   |_                     _|   |_
-                                      | ... |_._._._._._._._._._._| ... |
-                                      | ||| |  o NATIONAL BANK o  | ||| |
-                                      | """ |  """    """    """  | """ |
-                                 ())  |[-|-]| [-|-]  [-|-]  [-|-] |[-|-]|  ())
-                                (())) |     |---------------------|     | (()))
-                               (())())| """ |  """    """    """  | """ |(())())
-                               (()))()|[-|-]|  :::   .-"-.   :::  |[-|-]|(()))()
-                               ()))(()|     | |~|~|  |_|_|  |~|~| |     |()))(()
-                                  ||  |_____|_|_|_|__|_|_|__|_|_|_|_____|  ||
-                               ~ ~^^ @@@@@@@@@@@@@@/=======\@@@@@@@@@@@@@@ ^^~ ~
-                                    ^~^~                                ~^~^
-                                        '''
-    current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
+                                        _._._                       _._._
+                                       _|   |_                     _|   |_
+                                       | ... |_._._._._._._._._._._| ... |
+                                       | ||| |  o NATIONAL BANK o  | ||| |
+                                       | """ |  """    """    """  | """ |
+                                  ())  |[-|-]| [-|-]  [-|-]  [-|-] |[-|-]|  ())
+                                 (())) |     |---------------------|     | (()))
+                                (())())| """ |  """    """    """  | """ |(())())
+                                (()))()|[-|-]|  :::   .-"-.   :::  |[-|-]|(()))()
+                                ()))(()|     | |~|~|  |_|_|  |~|~| |     |()))(()
+                                   ||  |_____|_|_|_|__|_|_|__|_|_|_|_____|  ||
+                                ~ ~^^ @@@@@@@@@@@@@@/=======\@@@@@@@@@@@@@@ ^^~ ~
+                                     ^~^~                                ~^~^
+                                         '''
+    current_funds = session.query(Finance.current_funds).filter_by(id=1).one()[0]
     income_this_week, = session.query(Finance.income_this_week).filter_by(id=1).one()
     shop_upkeep, = session.query(Finance.shop_upkeep).filter_by(id=1).one()
     total_salaries, = session.query(Finance.total_salaries).filter_by(id=1).one()
@@ -150,12 +153,12 @@ def view_finances():
     t_e =(f'Total Expenses: ${shop_upkeep + total_salaries}')
     print(bank)
 
-    print(f"""
+    console.print(f"""
 {'=' * int(terminal_width)}
-\n{" " * int((terminal_width / 2) - (len(cap) / 2))}{cap}
+\n{" " * int((terminal_width / 2) - (len(cap) / 2))}[bold green]{cap}[/]
 \n{" " * int((terminal_width / 2) - (len(c_f) / 2))}{c_f}
 \n{" " * int((terminal_width / 2) - (len(i_w) / 2))}{i_w}\n\n
-\n{" " * int((terminal_width / 2) - (len(exp) / 2))}{exp}
+\n{" " * int((terminal_width / 2) - (len(exp) / 2))}[bold red]{exp}[/]
 \n{" " * int((terminal_width / 2) - (len(s_u) / 2))}{s_u}
 \n{" " * int((terminal_width / 2) - (len(t_s) / 2))}{t_s}
 \n{" " * int((terminal_width / 2) - (len(t_e) / 2))}{t_e}\n\n
@@ -164,7 +167,7 @@ def view_finances():
     input('Press enter to return to the main menu')
     clear()
     main_menu()
-
+#--------------------------------------------------------------------------------------
     
 
 # Classes/Tables --------------------------------------------------------------------------------------
