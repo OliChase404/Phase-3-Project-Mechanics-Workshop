@@ -32,7 +32,8 @@ def clock(hours):
 
 
 def main_menu():
-  stats_ticker = f'|--> Day: {game_days} Current funds: ${10000} <--|'
+  current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
+  stats_ticker = f'|--> Day: {game_days} Current funds: ${current_funds} <--|'
   print('🔧' * int(terminal_width / 2))
   print("""
             ___           ___                       ___           ___           ___           ___           ___   
@@ -60,8 +61,7 @@ def main_menu():
 
       """)
   print('🔧' * int(terminal_width / 2))
-  print(
-      f'\n{" " * int((terminal_width / 2) - (len(stats_ticker) / 2))}{stats_ticker}\n')
+  print(f'\n{" " * int((terminal_width / 2) - (len(stats_ticker) / 2))}{stats_ticker}\n')
 
   print("""
 Commands:
@@ -85,6 +85,10 @@ Commands:
   elif choice == '4':
       clear()
       view_finances()
+  else:
+      clear()
+      clock(4)
+      main_menu()
 
 
 def view_inbox():
@@ -98,13 +102,15 @@ def view_workshop():
 
 def view_employees():
     employees = session.query(Mechanic).all()
+    print('\nCurrent Employees:\n')
     print(employees)
-    fire = input('Would you like to fire an employee? (y/n)')
+    fire = input('Would you like to fire an employee? (y/n)\n--> ')
     if fire == 'y':
         selcted_employee = input('Enter the ID of the employee to fire --> ')
         if selcted_employee in [str(employee.id) for employee in employees]:
             session.query(Mechanic).filter(
                 Mechanic.id == selcted_employee).delete()
+            print(f'\n<---Employee Fired--->\n')
             view_employees()
         else:
             clear()
@@ -117,30 +123,47 @@ def view_employees():
 
 def view_finances():
     bank = r'''
-         _._._                       _._._
-        _|   |_                     _|   |_
-        | ... |_._._._._._._._._._._| ... |
-        | ||| |  o NATIONAL BANK o  | ||| |
-        | """ |  """    """    """  | """ |
-   ())  |[-|-]| [-|-]  [-|-]  [-|-] |[-|-]|  ())
-  (())) |     |---------------------|     | (()))
- (())())| """ |  """    """    """  | """ |(())())
- (()))()|[-|-]|  :::   .-"-.   :::  |[-|-]|(()))()
- ()))(()|     | |~|~|  |_|_|  |~|~| |     |()))(()
-    ||  |_____|_|_|_|__|_|_|__|_|_|_|_____|  ||
- ~ ~^^ @@@@@@@@@@@@@@/=======\@@@@@@@@@@@@@@ ^^~ ~
-      ^~^~                                ~^~^
-          '''
-    current_finances = session.query(Finance).all()
+                                       _._._                       _._._
+                                      _|   |_                     _|   |_
+                                      | ... |_._._._._._._._._._._| ... |
+                                      | ||| |  o NATIONAL BANK o  | ||| |
+                                      | """ |  """    """    """  | """ |
+                                 ())  |[-|-]| [-|-]  [-|-]  [-|-] |[-|-]|  ())
+                                (())) |     |---------------------|     | (()))
+                               (())())| """ |  """    """    """  | """ |(())())
+                               (()))()|[-|-]|  :::   .-"-.   :::  |[-|-]|(()))()
+                               ()))(()|     | |~|~|  |_|_|  |~|~| |     |()))(()
+                                  ||  |_____|_|_|_|__|_|_|__|_|_|_|_____|  ||
+                               ~ ~^^ @@@@@@@@@@@@@@/=======\@@@@@@@@@@@@@@ ^^~ ~
+                                    ^~^~                                ~^~^
+                                        '''
     current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
     income_this_week, = session.query(Finance.income_this_week).filter_by(id=1).one()
     shop_upkeep, = session.query(Finance.shop_upkeep).filter_by(id=1).one()
     total_salaries, = session.query(Finance.total_salaries).filter_by(id=1).one()
+    cap = ('---Capital---')
+    c_f =(f'Current Funds: ${current_funds}')
+    i_w =(f'Income this week: ${income_this_week}')
+    exp = ('---Expenses---')
+    s_u =(f'Shop Upkeep: ${shop_upkeep}/Week')
+    t_s =(f'Total Salaries: ${total_salaries}')
+    t_e =(f'Total Expenses: ${shop_upkeep + total_salaries}')
     print(bank)
-    print(f'Current Funds: ${current_funds}')
-    print(f'Income this week: ${income_this_week}')
-    print(f'Shop Upkeep: -${shop_upkeep}/Week')
-    print(f'Total Salaries: ${total_salaries}')
+
+    print(f"""
+{'=' * int(terminal_width)}
+\n{" " * int((terminal_width / 2) - (len(cap) / 2))}{cap}
+\n{" " * int((terminal_width / 2) - (len(c_f) / 2))}{c_f}
+\n{" " * int((terminal_width / 2) - (len(i_w) / 2))}{i_w}\n\n
+\n{" " * int((terminal_width / 2) - (len(exp) / 2))}{exp}
+\n{" " * int((terminal_width / 2) - (len(s_u) / 2))}{s_u}
+\n{" " * int((terminal_width / 2) - (len(t_s) / 2))}{t_s}
+\n{" " * int((terminal_width / 2) - (len(t_e) / 2))}{t_e}\n\n
+{'=' * int(terminal_width)}
+          """)
+    input('Press enter to return to the main menu')
+    clear()
+    main_menu()
 
     
 
