@@ -8,6 +8,7 @@ from faker import Faker
 from rich import print
 import random
 import time
+import sys
 import os
 
 engine = create_engine("sqlite:///workshop.db")
@@ -442,13 +443,60 @@ def check_day():
         pass
     else:
         if day_of_the_week == 'Monday':
+            current_day = day_of_the_week
+            clear()
             new_week_summary()
         else: roll_event_dice()    
         current_day = day_of_the_week
 
         
 def new_week_summary():
-    print('New week summary')
+    last_week_number = game_days // 7 
+    new_week_number = last_week_number + 1
+    all_mechanics = session.query(Mechanic).all()
+    current_finances = session.query(Finance).filter_by(id=1).one()
+    total_salaries = 0
+    for mechanic in all_mechanics:
+        total_salaries += mechanic.salary
+    total_expenses = current_finances.shop_upkeep + total_salaries
+    updated_funds = current_finances.current_funds - total_expenses
+    
+    session.query(Finance).filter_by(id=1).update({Finance.current_funds: updated_funds})
+    session.query(Finance).filter_by(id=1).update({Finance.total_salaries: total_salaries})
+    session.query(Finance).filter_by(id=1).update({Finance.income_this_week: 0})
+    session.commit()
+    
+    if updated_funds < 0:
+        clear()
+        game_over()
+    else:    
+        title = (f'<-----Week {last_week_number} Summary----->')
+        inc = (f'<-Income This Week->')
+        exp = (f'<-Expenses This Week->')
+        su = (f'Shop Upkeep: ${current_finances.shop_upkeep}')
+        es = (f'Total Salaries: ${total_salaries}')
+        foot = (f'<---Welcome To Week {new_week_number}--->')
+        
+        
+        console.print('[bright_cyan]=[/]' * int(terminal_width))
+        console.print('[bright_cyan]=[/]' * int(terminal_width))
+        console.print(f'''
+        \n{" " * int((terminal_width / 2) - (len(title) / 2))}[bold bright_cyan]{title}[/]
+        \n\n{" " * int((terminal_width / 2) - (len(inc) / 2))}[bold bright_green]{inc}[/]
+        \n{" " * int((terminal_width / 2) - (len(str(current_finances.income_this_week)) / 2)-1)}[bold bright_green]${current_finances.income_this_week}[/]
+        \n\n{" " * int((terminal_width / 2) - (len(exp) / 2))}[bold bright_red]{exp}[/]
+        \n{" " * int((terminal_width / 2) - (len(str(su)) / 2))}[bold bright_red]{su}[/]
+        \n{" " * int((terminal_width / 2) - (len(str(es)) / 2))}[bold bright_red]{es}[/]
+        \n{" " * int((terminal_width / 2) - (len(foot) / 2))}[bold bright_cyan]{foot}[/]\n            
+        ''')
+        console.print('[bright_cyan]=[/]' * int(terminal_width))
+        console.print('[bright_cyan]=[/]' * int(terminal_width))
+        print('\n')
+        input('Press Any Key To Continue')
+        clear()
+        main_menu()
+
+    
     
 def roll_event_dice():
     dice = random.randint(1, 1000)
@@ -477,6 +525,42 @@ def shop_fire():
     print('Shop fire')
 #----------------------END TIME BASED EVENTS----------------------#
 
+def game_over():
+    go = ('<---GAME OVER--->')
+    mes = ('Your Shop Has Gone Bankrupt')
+    mes2 = ('You Flee To The Mountains to Live Out the Rest of Your Days in Solitude')
+    console.print(f'{" " * int((terminal_width / 2) - (len(mes) / 2))}[bold bright_yellow]{mes}[/]')
+    console.print(f'{" " * int((terminal_width / 2) - (len(mes2) / 2))}[bold bright_yellow]{mes2}[/]')
+    road = r'''
+                                        ___                          
+                                      _/XXX\
+                       _             /XXXXXX\_                                    __
+                       X\__    __   /X XXXX XX\                          _       /XX\__      ___
+                           \__/  \_/__       \ \                       _/X\__   /XX XXX\____/XXX\
+                         \  ___   \/  \_      \ \               __   _/      \_/  _/  -   __  -  \__/
+                        ___/   \__/   \ \__     \\__           /  \_//  _ _ \  \     __  /  \____//
+                       /  __    \  /     \ \_   _//_\___     _/    //           \___/  \/     __/
+                       __/_______\________\__\_/________\_ _/_____/_____________/_______\____/_______
+                                                         /|\
+                                                        / | \
+                                                       /  |  \
+                                                      /   |   \
+                                                     /    |    \
+                                                    /     |     \
+                                                   /      |      \
+                                                  /       |       \
+                                                 /        |        \
+                                                /         |         \
+                                               /          |          \
+                                              /           |           \
+                                             /            |            \                            
+                                          '''
+    console.print(f''' [dark_orange]{road}[/]''')
+
+    console.print(f'{" " * int((terminal_width / 2) - (len(go) / 2))}[bright_yellow]{go}[/]\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+    # time.sleep(1)
+    sys.exit()
+    
 
 # New Game Setup ------------------------------------------------
 m1 = Mechanic(name=fake.name(), level=4, salary=650)
