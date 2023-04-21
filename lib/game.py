@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
-from rich.console import Console
 from functions import random_job
+from rich.console import Console
 from ipdb import set_trace
 from faker import Faker
 from rich import print
@@ -23,6 +23,7 @@ def clear(): return os.system('tput reset')
 # Game clock ------------------------------
 game_hours = 8
 game_days = 1
+current_day = 'Monday'
 days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 def clock(hours):
     global game_hours
@@ -33,15 +34,17 @@ def clock(hours):
 # ------------------------------
 
 
-# workshop_funds = 10000
 
-
+# Main Menu --------------------------------
 def main_menu():
-  day_of_the_week = days[(game_days % 7) - 1]
-  current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
-  stats_ticker = f'|--> Day: {game_days} Current funds: ${current_funds} <--|'
-  print('🔧' * int(terminal_width / 2))
-  console.print("""[bright_cyan]
+    clock(1)
+    check_day()
+    day_of_the_week = days[(game_days % 7) - 1]
+    current_funds, = session.query(Finance.current_funds).filter_by(id=1).one()
+    stats_ticker = f'|--> Day: {game_days} Current funds: ${current_funds} <--|'
+    
+    print('🔧' * int(terminal_width / 2))
+    console.print("""[bright_cyan]
       ___           ___                       ___           ___           ___           ___           ___   
      /  /\         /__/\          ___        /  /\         /  /\         /__/\         /  /\         /  /\  
     /  /::\        \  \:\        /  /\      /  /::\       /  /:/_        \  \:\       /  /::\       /  /::\ 
@@ -67,33 +70,36 @@ def main_menu():
                                       \__\/         \__\/         \__\/         \__\/  
 
       [/]""")
-  print('🔧' * int(terminal_width / 2))
-  print(f'\n{" " * int((terminal_width / 2) - (len(day_of_the_week) / 2))}{day_of_the_week}')
-  print(f'\n{" " * int((terminal_width / 2) - (len(stats_ticker) / 2))}{stats_ticker}\n')
-
-  print("""
+    print('🔧' * int(terminal_width / 2))
+    print(f'\n{" " * int((terminal_width / 2) - (len(day_of_the_week) / 2))}{day_of_the_week}')
+    print(f'\n{" " * int((terminal_width / 2) - (len(stats_ticker) / 2))}{stats_ticker}\n')
+    print("""
 Commands:
 1 = View Computer
 2 = Visit Workshop
 3 = Visit Bank
         """)
-
-  choice = input('>>> ')
-  if choice == '1':
-      clear()
-      view_computer()
-  elif choice == '2':
+    
+    choice = input('>>> ')
+    if choice == '1':
         clear()
-        view_workshop()
-  elif choice == '3':
-      clear()
-      view_finances()
-  else:
-      clear()
-      main_menu()
+        view_computer()
+    elif choice == '2':
+          clear()
+          view_workshop()
+    elif choice == '3':
+        clear()
+        view_finances()
+    else:
+        clear()
+        main_menu()
+#-----------------------------------------
 
 
+
+#--------------COMPUTER FUNCTIONS----------------#
 def view_computer():
+    clock(1)
     print('=' * int(terminal_width))
     console.print('''[bright_blue]
                                  .,,uod8B8bou,,.
@@ -151,6 +157,7 @@ Commands:
         view_computer()
         
 def view_available_jobs():
+    clock(1)
     rj = random_job()
     # print(rj)
     j1 = Job(description=rj['description'], difficulty=rj['difficulty'], reward=rj['reward'], assigned_to=None)
@@ -176,6 +183,7 @@ def view_available_jobs():
         view_computer()
         
 def view_resumes():
+    clock(1)
     new_mech_level = random.randint(1, 10)
     new_mech_salary = new_mech_level * 150 + 500
     M1 = Mechanic(name=fake.name(), level=new_mech_level, salary=new_mech_salary)
@@ -199,16 +207,21 @@ def view_resumes():
         view_computer()
     
 def view_employees():
+    clock(1)
     employees = session.query(Mechanic).all()
     print('\nCurrent Employees:\n')
-    print(employees)
+    for employee in employees:
+        print(f'''  
+  {employee.id} | {employee.name} 
+    | Level: {employee.level} 
+    | Salary: {employee.salary}\n''')
     fire = input('Would you like to fire an employee? (y/n)\n--> ')
     if fire == 'y':
         selcted_employee = input('Enter the ID of the employee to fire --> ')
         if selcted_employee in [str(employee.id) for employee in employees]:
             session.query(Mechanic).filter(
                 Mechanic.id == selcted_employee).delete()
-            print(f'\n<---Employee Fired--->\n')
+            console.print(f'\n[bright_yellow bold]<---Employee Fired--->[/]\n')
             time.sleep(1)
             clear()
             view_employees()
@@ -218,9 +231,13 @@ def view_employees():
     else:
         clear()
         view_computer()
+#-------------------END OF COMPUTER FUNCTIONS-------------------#
 
 
+
+#-------------------WORKSHOP FUNCTIONS-------------------#
 def view_workshop():
+    clock(1)
     print('=' * int(terminal_width))
     console.print('''[chartreuse1]
 
@@ -272,6 +289,7 @@ Commands:
         clear()
         view_workshop()
 def attempt_repairs():
+    clock(2)
     m_id = input('Select a Mechanic to Assign. \nEnter Mechanic ID --> ')
     selected_mechanic = session.query(Mechanic).filter(Mechanic.id == m_id).first()
     print(f"{selected_mechanic.name} has been selected.")
@@ -296,7 +314,7 @@ def attempt_repairs():
             console.print('[bright_green]--> Repair Successful!<--[/]')
             dice = random.randint(1,6)
             if dice == 6: 
-                console.print(f'[deep_pink1]{selected_mechanic.name} has leveled up![/]')
+                console.print(f'[deep_pink1]{selected_mechanic.name} Has Leveled Up![/]')
                 session.query(Mechanic).filter(Mechanic.id == m_id).update({Mechanic.level: Mechanic.level + 1})
                 session.commit()
             console.print(f'[bright_yellow]${selected_job.reward} Added to Funds![/]')
@@ -318,13 +336,15 @@ def attempt_repairs():
             time.sleep(3)
             clear()
             view_workshop()
-    
+#-------------------END OF WORKSHOP FUNCTIONS-------------------#
+
         
 
 
 
-
+#-------------------FINANCE FUNCTIONS-------------------#
 def view_finances():
+    clock(1)
     bank = r'''
                                          _._._                       _._._
                                         _|   |_                     _|   |_
@@ -367,7 +387,7 @@ def view_finances():
     input('Press enter to return to the main menu')
     clear()
     main_menu()
-#--------------------------------------------------------------------------------------
+#-------------------END OF FINANCE FUNCTIONS-------------------#
     
 
 # Classes/Tables --------------------------------------------------------------------------------------
@@ -413,6 +433,49 @@ Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 # --------------------------------------------------------------------------------------
 
+
+#----------------------TIME BASED EVENTS----------------------#
+def check_day():
+    global current_day
+    day_of_the_week = days[(game_days % 7) - 1]
+    if current_day == day_of_the_week:
+        pass
+    else:
+        if day_of_the_week == 'Monday':
+            new_week_summary()
+        else: roll_event_dice()    
+        current_day = day_of_the_week
+
+        
+def new_week_summary():
+    print('New week summary')
+    
+def roll_event_dice():
+    dice = random.randint(1, 1000)
+    if dice in range(1, 50):
+        clear()
+        mech_wants_raise()
+    elif dice in range(51, 100):
+        clear()
+        mech_quits()
+    elif dice in range (101, 110):
+        clear()
+        shop_fire()
+    else: pass
+        
+def mech_wants_raise():
+    print('''
+          
+          ''')
+    clear()
+    main_menu()
+    
+def mech_quits():
+    print('Mech quits')
+    
+def shop_fire():
+    print('Shop fire')
+#----------------------END TIME BASED EVENTS----------------------#
 
 
 # New Game Setup ------------------------------------------------
