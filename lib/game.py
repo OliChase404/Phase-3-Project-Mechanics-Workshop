@@ -95,7 +95,7 @@ Commands:
 
 def view_computer():
     print('=' * int(terminal_width))
-    console.print('''[bright_green]
+    console.print('''[bright_blue]
                                  .,,uod8B8bou,,.
                         ..,uod8BBBBBBBBBBBBBBBBRPFT?l!i:.
                    ,=m8BBBBBBBBBBBBBBBRPFT?!||||||||||||||
