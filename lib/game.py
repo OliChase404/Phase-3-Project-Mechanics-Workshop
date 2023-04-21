@@ -289,6 +289,7 @@ Commands:
     else:
         clear()
         view_workshop()
+        
 def attempt_repairs():
     clock(2)
     m_id = input('Select a Mechanic to Assign. \nEnter Mechanic ID --> ')
@@ -509,20 +510,87 @@ def roll_event_dice():
     elif dice in range (101, 110):
         clear()
         shop_fire()
+    elif dice in range(111, 140):
+        clear()
+        shop_burglary()
     else: pass
         
 def mech_wants_raise():
-    print('''
-          
-          ''')
-    clear()
-    main_menu()
+    all_mechnics = session.query(Mechanic).all()
+    mech = random.choice(all_mechnics)
+    requested_raise = int(mech.salary * random.uniform(0.1, 0.6))
+    print('\n')
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
+    print(f'''\n
+          {mech.name} is demanding a raise!
+          Current Salary: ${mech.salary}.
+          Requested Salary: ${mech.salary + requested_raise}.
+          \n''')
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
+    choice = input('\nGrant Raise (y)\nFire The Mechanic (n)\n --> ')
+    if choice == 'n':
+        print(f'{mech.name} Has Been Fired')
+        session.delete(mech)
+        session.commit()
+        time.sleep(3)
+        clear()
+        main_menu()
+    else: 
+        session.query(Mechanic).filter_by(id=mech.id).update({Mechanic.salary: mech.salary + requested_raise})
+        session.commit()
+        print('You Granted The Raise')
+        time.sleep(3)
+        clear()
+        main_menu()
+    
+    
+
     
 def mech_quits():
-    print('Mech quits')
+    all_mechnics = session.query(Mechanic).all()
+    mech = random.choice(all_mechnics)
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
+    print(f'''\n
+            {mech.name} has decided to leave the shop.
+          \n''')
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
+    console.print('[bright_cyan]=[/]' * int(terminal_width))
     
 def shop_fire():
     print('Shop fire')
+    
+def shop_burglary():
+    session.query(Finance).update({Finance.current_funds: Finance.current_funds - 1500})
+    session.commit()
+    console.print(r"""[bold bright_blue]
+          
+                        ,////,
+       _______          |____,|
+   __/         \__     /     _`
+ _{                \    _/_,-'
+(                   /'/   \   ,/;,
+{ (                /'  \_   \ / _/
+ {                /     _ \  ` /
+   \              |         `\_/
+     - - -,_____|         )
+    /\_        /`       \~
+   /' /_``--.__/   `,.    \
+  |_/`  `-._      /  `\    `.
+            `-.__/'     `\   |
+                          |  |
+                          |  |
+                          |  |_
+                          \_____)
+                          
+    [/]""")
+    print("There has been a burglary at the shop! A robber has stolen $1500 worth in equipment!")
+    print("$1500 has been taken from your funds to purchase new equipment\n")
+    input('Press Any Key To Continue')
+    clear()
+    main_menu()
 #----------------------END TIME BASED EVENTS----------------------#
 
 def game_over():
